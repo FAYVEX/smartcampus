@@ -9,7 +9,148 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      emergency_contacts: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean | null
+          name: string
+          phone_number: string
+          role: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          phone_number: string
+          role: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          phone_number?: string
+          role?: string
+        }
+        Relationships: []
+      }
+      incidents: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          image_url: string | null
+          incident_type: Database["public"]["Enums"]["incident_type"]
+          location_lat: number | null
+          location_lng: number | null
+          status: Database["public"]["Enums"]["incident_status"]
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          image_url?: string | null
+          incident_type: Database["public"]["Enums"]["incident_type"]
+          location_lat?: number | null
+          location_lng?: number | null
+          status?: Database["public"]["Enums"]["incident_status"]
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          incident_type?: Database["public"]["Enums"]["incident_type"]
+          location_lat?: number | null
+          location_lng?: number | null
+          status?: Database["public"]["Enums"]["incident_status"]
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incidents_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          department: string | null
+          full_name: string | null
+          id: string
+          phone_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          department?: string | null
+          full_name?: string | null
+          id: string
+          phone_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          department?: string | null
+          full_name?: string | null
+          id?: string
+          phone_number?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sos_alerts: {
+        Row: {
+          created_at: string
+          id: string
+          location_lat: number | null
+          location_lng: number | null
+          resolved: boolean | null
+          resolved_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sos_alerts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +159,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      incident_status: "pending" | "under_review" | "resolved"
+      incident_type: "theft" | "harassment" | "accident" | "other"
     }
     CompositeTypes: {
       [_ in never]: never
