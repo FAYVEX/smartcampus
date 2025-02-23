@@ -1,5 +1,4 @@
-
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Shield, MapPin, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,32 +15,24 @@ const SafetyPage = () => {
   const [coordinates, setCoordinates] = useState<Coordinates>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        navigate('/');
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setCoordinates({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        toast({
+          title: "Location Access Required",
+          description: "Please enable location services for better assistance.",
+          variant: "destructive",
+        });
       }
-    });
-
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setCoordinates({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          });
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-          toast({
-            title: "Location Access Required",
-            description: "Please enable location services for better assistance.",
-            variant: "destructive",
-          });
-        }
-      );
-    }
-  }, [navigate]);
+    );
+  }
 
   const handleSOSAlert = async () => {
     try {
@@ -87,7 +78,6 @@ const SafetyPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-3xl mx-auto space-y-8">
-          {/* Header */}
           <div className="text-center space-y-2">
             <h1 className="text-3xl font-bold">Campus Safety</h1>
             <p className="text-gray-600 dark:text-gray-300">
@@ -95,7 +85,6 @@ const SafetyPage = () => {
             </p>
           </div>
 
-          {/* SOS Button */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
             <div className="text-center space-y-4">
               <Shield className="w-16 h-16 text-red-500 mx-auto" />
@@ -115,7 +104,6 @@ const SafetyPage = () => {
             </div>
           </div>
 
-          {/* Quick Actions */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Button
               variant="outline"
