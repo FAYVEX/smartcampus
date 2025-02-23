@@ -15,18 +15,27 @@ const SafetyPage = () => {
   const navigate = useNavigate();
   const [coordinates, setCoordinates] = useState<Coordinates>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Check authentication status
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        navigate('/');
+      } else if (!session) {
+        navigate('/');
+      } else {
+        setIsAuthenticated(true);
+      }
+    });
+
+    // Initial auth check
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         navigate('/');
-        toast({
-          title: "Authentication Required",
-          description: "Please log in to access the safety features.",
-          variant: "destructive",
-        });
+      } else {
+        setIsAuthenticated(true);
       }
     };
     checkAuth();
@@ -50,6 +59,11 @@ const SafetyPage = () => {
         }
       );
     }
+
+    // Cleanup subscription
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   const handleSOSAlert = async () => {
@@ -91,6 +105,10 @@ const SafetyPage = () => {
       setIsLoading(false);
     }
   };
+
+  if (!isAuthenticated) {
+    return null; // Don't render anything while checking authentication
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 dark:from-gray-900 dark:to-gray-800">
