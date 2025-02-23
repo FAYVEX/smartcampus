@@ -1,20 +1,18 @@
 
+import LoginForm from "@/components/LoginForm";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import LoginForm from "@/components/LoginForm";
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         navigate('/student-dashboard');
       }
-    };
-    checkAuth();
+    });
   }, [navigate]);
 
   return (

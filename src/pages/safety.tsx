@@ -15,27 +15,14 @@ const SafetyPage = () => {
   const navigate = useNavigate();
   const [coordinates, setCoordinates] = useState<Coordinates>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isAuthChecking, setIsAuthChecking] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT' || !session) {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
         navigate('/');
       }
     });
 
-    // Initial auth check
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate('/');
-      }
-      setIsAuthChecking(false);
-    };
-    checkAuth();
-
-    // Get user location if permitted
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -54,11 +41,6 @@ const SafetyPage = () => {
         }
       );
     }
-
-    // Cleanup subscription
-    return () => {
-      subscription.unsubscribe();
-    };
   }, [navigate]);
 
   const handleSOSAlert = async () => {
@@ -100,10 +82,6 @@ const SafetyPage = () => {
       setIsLoading(false);
     }
   };
-
-  if (isAuthChecking) {
-    return null; // Show nothing while checking auth status
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 dark:from-gray-900 dark:to-gray-800">
