@@ -15,17 +15,13 @@ const SafetyPage = () => {
   const navigate = useNavigate();
   const [coordinates, setCoordinates] = useState<Coordinates>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
 
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT') {
+      if (event === 'SIGNED_OUT' || !session) {
         navigate('/');
-      } else if (!session) {
-        navigate('/');
-      } else {
-        setIsAuthenticated(true);
       }
     });
 
@@ -34,9 +30,8 @@ const SafetyPage = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         navigate('/');
-      } else {
-        setIsAuthenticated(true);
       }
+      setIsAuthChecking(false);
     };
     checkAuth();
 
@@ -106,8 +101,8 @@ const SafetyPage = () => {
     }
   };
 
-  if (!isAuthenticated) {
-    return null; // Don't render anything while checking authentication
+  if (isAuthChecking) {
+    return null; // Show nothing while checking auth status
   }
 
   return (
