@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Shield, MapPin, ClipboardList } from "lucide-react";
@@ -48,6 +49,15 @@ const SafetyPage = () => {
         return;
       }
 
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', session.user.id)
+        .single();
+
+      if (profileError) throw profileError;
+
+      // Store the alert in the database
       const { error } = await supabase
         .from('sos_alerts')
         .insert({
@@ -57,6 +67,18 @@ const SafetyPage = () => {
         });
 
       if (error) throw error;
+
+      // Send email notification
+      const { error: emailError } = await supabase.functions.invoke('send-sos-alert', {
+        body: {
+          location_lat: coordinates?.latitude,
+          location_lng: coordinates?.longitude,
+          user_email: session.user.email,
+          user_name: profileData?.full_name || 'Unknown User'
+        },
+      });
+
+      if (emailError) throw emailError;
 
       toast({
         title: "SOS Alert Sent",
