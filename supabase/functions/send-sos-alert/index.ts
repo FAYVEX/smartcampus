@@ -14,6 +14,7 @@ interface SOSAlertRequest {
   location_lng: number;
   user_email: string;
   user_name: string;
+  recipient_email: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -22,35 +23,37 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { location_lat, location_lng, user_email, user_name }: SOSAlertRequest = await req.json()
+    const { location_lat, location_lng, user_email, user_name, recipient_email }: SOSAlertRequest = await req.json()
 
     const googleMapsUrl = `https://www.google.com/maps?q=${location_lat},${location_lng}`
 
     const emailResponse = await resend.emails.send({
       from: "Campus Safety <onboarding@resend.dev>",
-      to: ["campus.security@example.com"], // Replace with actual security email
-      subject: "⚠️ URGENT: SOS Alert Received",
+      to: [recipient_email],
+      subject: "🆘 URGENT: SOS Alert - Immediate Assistance Needed",
       html: `
         <h1>Emergency SOS Alert</h1>
-        <p>An SOS alert has been triggered by ${user_name} (${user_email}).</p>
+        <p>An urgent help request has been received from:</p>
+        <p>
+          Name: ${user_name}<br>
+          Email: ${user_email}
+        </p>
         <h2>Location Details:</h2>
         <p>
-          Latitude: ${location_lat}<br>
-          Longitude: ${location_lng}<br>
-          <a href="${googleMapsUrl}" style="color: #2563eb;">View Location on Google Maps</a>
+          <a href="${googleMapsUrl}" style="color: #2563eb;">Click here to view location on Google Maps</a>
         </p>
-        <p style="color: #dc2626;">Please respond immediately to this emergency situation.</p>
+        <p style="color: #dc2626; font-weight: bold;">This person needs immediate assistance. Please respond as soon as possible.</p>
       `,
-    })
+    });
 
-    console.log('Email sent successfully:', emailResponse)
+    console.log('Email sent successfully:', emailResponse);
 
     return new Response(JSON.stringify(emailResponse), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders }
     })
   } catch (error) {
-    console.error('Error sending SOS alert email:', error)
+    console.error('Error sending SOS alert email:', error);
     return new Response(
       JSON.stringify({ error: error.message }), {
         status: 500,
