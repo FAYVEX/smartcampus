@@ -5,14 +5,17 @@ import { ClerkProvider } from "@clerk/clerk-react";
 import App from "./App";
 import "./index.css";
 
-const PUBLISHABLE_KEY = "pk_test_c2hhcnAtbWlubm93LTg5LmNsZXJrLmFjY291bnRzLmRldiQ";
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "pk_test_c2hhcnAtbWlubm93LTg5LmNsZXJrLmFjY291bnRzLmRldiQ";
 if (!PUBLISHABLE_KEY) {
   throw new Error("Missing Clerk Publishable Key");
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+    <ClerkProvider 
+      publishableKey={PUBLISHABLE_KEY}
+      navigate={(to) => window.location.href = to}
+    >
       <App />
     </ClerkProvider>
   </React.StrictMode>
