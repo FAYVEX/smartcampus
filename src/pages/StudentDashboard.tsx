@@ -2,6 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   LogOut, 
   Shield, 
@@ -12,12 +13,12 @@ import {
   Moon,
   User
 } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 
-// Mock student data (replace with real API call later)
-const mockStudent = {
-  name: "John Doe",
-  avatar: "/placeholder.svg"
-};
+interface Profile {
+  full_name: string | null;
+  department: string | null;
+}
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
@@ -28,6 +29,38 @@ const StudentDashboard = () => {
     return false;
   });
   const [greeting, setGreeting] = useState("");
+  const [profile, setProfile] = useState<Profile | null>(null);
+
+  useEffect(() => {
+    const getProfile = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        navigate('/');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('full_name, department')
+        .eq('id', session.user.id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load user profile",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setProfile(data);
+    };
+
+    getProfile();
+  }, [navigate]);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -45,6 +78,11 @@ const StudentDashboard = () => {
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate('/');
   };
 
   const features = [
@@ -91,7 +129,7 @@ const StudentDashboard = () => {
             </div>
             <div>
               <h1 className="text-3xl font-semibold animate-fade-in">
-                {greeting}, {mockStudent.name}!
+                {greeting}, {profile?.full_name || 'User'}!
               </h1>
               <p className="text-gray-500 dark:text-gray-400">
                 Welcome to your Smart Campus Dashboard
@@ -109,7 +147,7 @@ const StudentDashboard = () => {
             </Button>
             <Button
               variant="outline"
-              onClick={() => navigate("/")}
+              onClick={handleSignOut}
               className="flex items-center gap-2"
             >
               <LogOut size={18} />

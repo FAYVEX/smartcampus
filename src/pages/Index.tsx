@@ -8,11 +8,22 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate('/student-dashboard');
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('department')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profile) {
+          navigate(profile.department === 'admin' ? '/admin-dashboard' : '/student-dashboard');
+        }
       }
-    });
+    };
+
+    checkSession();
   }, [navigate]);
 
   return (

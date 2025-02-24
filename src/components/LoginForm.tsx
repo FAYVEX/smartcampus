@@ -6,11 +6,13 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { toast } from './ui/use-toast';
 import { ChevronRight, User, UserPlus, Shield } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface LoginFormData {
   email: string;
   password: string;
   role: 'student' | 'admin' | null;
+  fullName: string;
 }
 
 const LoginForm = () => {
@@ -19,6 +21,7 @@ const LoginForm = () => {
     email: '',
     password: '',
     role: null,
+    fullName: '',
   });
   const [loading, setLoading] = useState(false);
 
@@ -37,7 +40,7 @@ const LoginForm = () => {
   };
 
   const validateForm = (): boolean => {
-    if (!formData.email || !formData.password || !formData.role) {
+    if (!formData.email || !formData.password || !formData.role || !formData.fullName) {
       toast({
         title: "Missing Fields",
         description: "Please fill in all fields and select a role.",
@@ -75,21 +78,48 @@ const LoginForm = () => {
 
     setLoading(true);
     try {
-      // This is just a mock login - replace with actual authentication
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Mock successful login
-      const route = formData.role === 'admin' ? '/admin-dashboard' : '/student-dashboard';
-      navigate(route);
-      
-      toast({
-        title: "Welcome back!",
-        description: `Successfully logged in as ${formData.role}.`,
+      // First, try to sign up the user
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
       });
-    } catch (error) {
+
+      if (signUpError && signUpError.message !== 'User already registered') {
+        throw signUpError;
+      }
+
+      // If user exists or signup successful, try to sign in
+      const { data: { session }, error: signInError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (signInError) throw signInError;
+
+      if (session) {
+        // Update the user's profile with their name
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: session.user.id,
+            full_name: formData.fullName,
+            department: formData.role,
+          });
+
+        if (updateError) throw updateError;
+
+        const route = formData.role === 'admin' ? '/admin-dashboard' : '/student-dashboard';
+        navigate(route);
+        
+        toast({
+          title: "Welcome!",
+          description: `Successfully logged in as ${formData.fullName}.`,
+        });
+      }
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to log in. Please try again.",
+        description: error.message || "Failed to log in. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -127,6 +157,19 @@ const LoginForm = () => {
               <Shield size={18} />
               Admin
             </button>
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="fullName">Full Name</Label>
+            <Input
+              id="fullName"
+              name="fullName"
+              type="text"
+              className="input-field"
+              value={formData.fullName}
+              onChange={handleInputChange}
+              placeholder="Enter your full name"
+            />
           </div>
 
           <div className="space-y-1">
