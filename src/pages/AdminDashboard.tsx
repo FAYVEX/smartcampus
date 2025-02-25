@@ -13,6 +13,8 @@ import {
   User
 } from "lucide-react";
 import { SOSAlertsList } from "@/components/SOSAlertsList";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
 // Mock admin data (replace with real API call later)
 const mockAdmin = {
@@ -30,6 +32,27 @@ const AdminDashboard = () => {
     else if (hour >= 12 && hour < 18) setGreeting("Good Afternoon");
     else setGreeting("Good Evening");
   }, []);
+
+  const handleSignOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      toast({
+        title: "Signed out successfully",
+        description: "You have been logged out of your account.",
+      });
+      
+      navigate("/");
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast({
+        title: "Error signing out",
+        description: "There was a problem signing out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const features = [
     {
@@ -96,7 +119,7 @@ const AdminDashboard = () => {
           </div>
           <Button
             variant="outline"
-            onClick={() => navigate("/")}
+            onClick={handleSignOut}
             className="flex items-center gap-2"
           >
             <LogOut size={18} />
