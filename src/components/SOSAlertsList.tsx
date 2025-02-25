@@ -1,12 +1,11 @@
 
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -100,17 +99,17 @@ export function SOSAlertsList() {
                   </p>
                 )}
                 {(alert.location_lat && alert.location_lng) && (
-                  <p className="text-sm">
-                    Location: {alert.location_lat.toFixed(6)}, {alert.location_lng.toFixed(6)}
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
                     <a
                       href={`https://www.google.com/maps?q=${alert.location_lat},${alert.location_lng}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="ml-2 text-blue-600 hover:underline"
+                      className="text-sm text-blue-600 hover:underline"
                     >
                       View on Map
                     </a>
-                  </p>
+                  </div>
                 )}
               </div>
             </CardContent>
