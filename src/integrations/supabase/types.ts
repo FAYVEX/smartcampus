@@ -86,6 +86,83 @@ export type Database = {
           },
         ]
       }
+      lost_found_claims: {
+        Row: {
+          claimer_id: string
+          contact_details: string
+          created_at: string
+          id: string
+          item_id: string
+          status: Database["public"]["Enums"]["item_status"] | null
+          updated_at: string
+        }
+        Insert: {
+          claimer_id: string
+          contact_details: string
+          created_at?: string
+          id?: string
+          item_id: string
+          status?: Database["public"]["Enums"]["item_status"] | null
+          updated_at?: string
+        }
+        Update: {
+          claimer_id?: string
+          contact_details?: string
+          created_at?: string
+          id?: string
+          item_id?: string
+          status?: Database["public"]["Enums"]["item_status"] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lost_found_claims_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "lost_found_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lost_found_items: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          image_url: string | null
+          item_status: Database["public"]["Enums"]["item_status"] | null
+          location: string | null
+          status: Database["public"]["Enums"]["lost_found_status"]
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          image_url?: string | null
+          item_status?: Database["public"]["Enums"]["item_status"] | null
+          location?: string | null
+          status: Database["public"]["Enums"]["lost_found_status"]
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          item_status?: Database["public"]["Enums"]["item_status"] | null
+          location?: string | null
+          status?: Database["public"]["Enums"]["lost_found_status"]
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -189,6 +266,8 @@ export type Database = {
       app_role: "admin" | "user"
       incident_status: "pending" | "under_review" | "resolved"
       incident_type: "theft" | "harassment" | "accident" | "other"
+      item_status: "active" | "claimed" | "resolved"
+      lost_found_status: "lost" | "found"
     }
     CompositeTypes: {
       [_ in never]: never
