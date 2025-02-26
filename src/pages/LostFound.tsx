@@ -20,9 +20,6 @@ interface LostFoundItem {
   created_at: string;
   user_id: string;
   item_status: "active" | "claimed" | "resolved" | null;
-  profiles: {
-    full_name: string | null;
-  } | null;
 }
 
 const LostFound = () => {
@@ -38,12 +35,7 @@ const LostFound = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("lost_found_items")
-        .select(`
-          *,
-          profiles:user_id (
-            full_name
-          )
-        `)
+        .select("*")
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -231,9 +223,6 @@ const LostFound = () => {
                           Location: {item.location}
                         </p>
                       )}
-                      <p className="text-sm text-gray-500 mt-1">
-                        Posted by: {item.profiles?.full_name || "Anonymous"}
-                      </p>
                       <div className="mt-2">
                         <span className={`inline-block px-2 py-1 text-xs rounded ${
                           item.status === "lost" 
