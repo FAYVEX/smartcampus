@@ -17,6 +17,7 @@ export function SOSAlertsList() {
   useEffect(() => {
     const fetchAlerts = async () => {
       try {
+        console.log("Fetching initial SOS alerts...");
         const { data, error } = await supabase
           .from('sos_alerts')
           .select(`
@@ -29,7 +30,11 @@ export function SOSAlertsList() {
           .order('created_at', { ascending: false })
           .limit(10);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching SOS alerts:', error);
+          throw error;
+        }
+        console.log('Initial alerts fetched:', data);
         setAlerts(data || []);
       } catch (error) {
         console.error('Error fetching SOS alerts:', error);
@@ -47,16 +52,40 @@ export function SOSAlertsList() {
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'sos_alerts'
+          table: 'sos_alerts',
+          filter: `resolved=eq.false`
         },
-        (payload) => {
+        async (payload) => {
           console.log('New SOS alert received:', payload);
-          setAlerts(currentAlerts => [payload.new, ...currentAlerts]);
+          
+          // Fetch the complete alert data including profile information
+          const { data, error } = await supabase
+            .from('sos_alerts')
+            .select(`
+              *,
+              profiles:user_id (
+                full_name,
+                phone_number
+              )
+            `)
+            .eq('id', payload.new.id)
+            .single();
+
+          if (error) {
+            console.error('Error fetching complete alert data:', error);
+            return;
+          }
+
+          console.log('Complete alert data:', data);
+          setAlerts(currentAlerts => [data, ...currentAlerts]);
         }
       )
-      .subscribe();
+      .subscribe(status => {
+        console.log('Subscription status:', status);
+      });
 
     return () => {
+      console.log('Cleaning up subscription...');
       supabase.removeChannel(channel);
     };
   }, []);
