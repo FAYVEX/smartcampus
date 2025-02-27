@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,22 +11,25 @@ import { useQuery } from "@tanstack/react-query";
 
 interface TravelBuddy {
   id: string;
-  name: string;
-  contact: string;
+  title: string;
+  description: string;
+  status: "has_vehicle" | "needs_vehicle";
+  location: string | null;
   date: string;
   time: string;
-  vehicle_status: "has_vehicle" | "needs_vehicle";
   created_at: string;
   user_id: string;
+  buddy_status: "active" | "matched" | "completed" | null;
 }
 
 const TravelBuddy = () => {
   const navigate = useNavigate();
-  const [name, setName] = useState("");
-  const [contact, setContact] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [location, setLocation] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
-  const [vehicleStatus, setVehicleStatus] = useState<"has_vehicle" | "needs_vehicle">("has_vehicle");
+  const [status, setStatus] = useState<"has_vehicle" | "needs_vehicle">("has_vehicle");
 
   const { data: buddies, isLoading } = useQuery({
     queryKey: ["travel-buddies"],
@@ -58,18 +61,19 @@ const TravelBuddy = () => {
       if (!session) {
         toast({
           title: "Error",
-          description: "You must be logged in to post",
+          description: "You must be logged in to post a travel buddy request",
           variant: "destructive",
         });
         return;
       }
 
       const { error } = await supabase.from("travel_buddies").insert({
-        name,
-        contact,
+        title,
+        description,
+        location,
+        status,
         date,
         time,
-        vehicle_status: vehicleStatus,
         user_id: session.user.id,
       });
 
@@ -77,19 +81,20 @@ const TravelBuddy = () => {
 
       toast({
         title: "Success",
-        description: "Travel Buddy added successfully",
+        description: "Travel buddy request posted successfully",
       });
 
       // Reset form
-      setName("");
-      setContact("");
+      setTitle("");
+      setDescription("");
+      setLocation("");
       setDate("");
       setTime("");
     } catch (error) {
-      console.error("Error submitting travel buddy:", error);
+      console.error("Error submitting travel buddy request:", error);
       toast({
         title: "Error",
-        description: "Failed to submit",
+        description: "Failed to submit request",
         variant: "destructive",
       });
     }
@@ -97,48 +102,72 @@ const TravelBuddy = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
-        <ArrowLeft className="mr-2" /> Back
-      </Button>
-      <h1 className="text-3xl font-bold">Travel Buddy</h1>
+      <div className="mb-6">
+        <Button
+          variant="ghost"
+          onClick={() => navigate(-1)}
+          className="mb-4"
+        >
+          <ArrowLeft className="mr-2" />
+          Back
+        </Button>
+        <h1 className="text-3xl font-bold">Travel Buddy</h1>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Post Travel Buddy Info</CardTitle>
+            <CardTitle>Post Travel Request</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <Label htmlFor="vehicle-status">Vehicle Status</Label>
+                <Label htmlFor="status">Travel Status</Label>
                 <select
-                  id="vehicle-status"
-                  value={vehicleStatus}
-                  onChange={(e) => setVehicleStatus(e.target.value as "has_vehicle" | "needs_vehicle")}
+                  id="status"
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value as "has_vehicle" | "needs_vehicle")}
                   className="w-full p-2 border rounded"
                 >
                   <option value="has_vehicle">I Have a Vehicle</option>
                   <option value="needs_vehicle">I Need a Vehicle</option>
                 </select>
               </div>
+
               <div>
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="title">Title</Label>
                 <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  id="title"
+                  value={title}
+                  placeholder="e.g., Trip to Mall, Going to Airport"
+                  onChange={(e) => setTitle(e.target.value)}
                   required
                 />
               </div>
+
               <div>
-                <Label htmlFor="contact">Contact Number</Label>
-                <Input
-                  id="contact"
-                  value={contact}
-                  onChange={(e) => setContact(e.target.value)}
+                <Label htmlFor="description">Description</Label>
+                <textarea
+                  id="description"
+                  value={description}
+                  placeholder="Add details about your trip, number of seats available, etc."
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full p-2 border rounded min-h-[100px]"
                   required
                 />
               </div>
+
+              <div>
+                <Label htmlFor="location">Start/Destination</Label>
+                <Input
+                  id="location"
+                  value={location}
+                  placeholder="e.g., Campus to Downtown"
+                  onChange={(e) => setLocation(e.target.value)}
+                  required
+                />
+              </div>
+
               <div>
                 <Label htmlFor="date">Date</Label>
                 <Input
@@ -149,6 +178,7 @@ const TravelBuddy = () => {
                   required
                 />
               </div>
+
               <div>
                 <Label htmlFor="time">Time</Label>
                 <Input
@@ -159,8 +189,10 @@ const TravelBuddy = () => {
                   required
                 />
               </div>
+
               <Button type="submit" className="w-full">
-                <Upload className="mr-2" /> Submit
+                <Upload className="mr-2" />
+                Submit Request
               </Button>
             </form>
           </CardContent>
@@ -169,24 +201,45 @@ const TravelBuddy = () => {
         <div className="space-y-4">
           <h2 className="text-2xl font-semibold mb-4">Recent Travel Buddies</h2>
           {isLoading ? (
-            <p>Loading...</p>
+            <p>Loading travel requests...</p>
           ) : buddies?.length === 0 ? (
-            <p>No travel buddies found.</p>
+            <p>No travel buddy requests found.</p>
           ) : (
             buddies?.map((buddy) => (
               <Card key={buddy.id}>
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="font-semibold">{buddy.name}</h3>
-                      <p>Contact: {buddy.contact}</p>
-                      <p>Date: {buddy.date}</p>
-                      <p>Time: {buddy.time}</p>
-                      <span className={`inline-block px-2 py-1 text-xs rounded ${
-                        buddy.vehicle_status === "has_vehicle" ? "bg-blue-100 text-blue-800" : "bg-yellow-100 text-yellow-800"
-                      }`}>
-                        {buddy.vehicle_status === "has_vehicle" ? "Has Vehicle" : "Needs Vehicle"}
-                      </span>
+                      <h3 className="font-semibold">{buddy.title}</h3>
+                      <p className="text-sm text-gray-600">{buddy.description}</p>
+                      {buddy.location && (
+                        <p className="text-sm text-gray-500">
+                          Route: {buddy.location}
+                        </p>
+                      )}
+                      <p className="text-sm text-gray-500">
+                        Date: {buddy.date} at {buddy.time}
+                      </p>
+                      <div className="mt-2">
+                        <span className={`inline-block px-2 py-1 text-xs rounded ${
+                          buddy.status === "needs_vehicle" 
+                            ? "bg-yellow-100 text-yellow-800" 
+                            : "bg-blue-100 text-blue-800"
+                        }`}>
+                          {buddy.status === "has_vehicle" ? "HAS VEHICLE" : "NEEDS VEHICLE"}
+                        </span>
+                        {buddy.buddy_status && (
+                          <span className={`ml-2 inline-block px-2 py-1 text-xs rounded ${
+                            buddy.buddy_status === "matched" 
+                              ? "bg-green-100 text-green-800" 
+                              : buddy.buddy_status === "completed"
+                                ? "bg-purple-100 text-purple-800"
+                                : "bg-gray-100 text-gray-800"
+                          }`}>
+                            {buddy.buddy_status.toUpperCase()}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </CardContent>

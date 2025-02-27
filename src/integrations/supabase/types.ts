@@ -36,6 +36,53 @@ export type Database = {
         }
         Relationships: []
       }
+      travel_buddies: {
+        Row: {
+          id: string
+          title: string
+          description: string
+          status: "has_vehicle" | "needs_vehicle"
+          location: string | null
+          date: string
+          time: string
+          user_id: string
+          buddy_status: "active" | "inactive" | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          description: string
+          status?: "has_vehicle" | "needs_vehicle"
+          location?: string | null
+          date: string
+          time: string
+          user_id: string
+          buddy_status?: "active" | "inactive" | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string
+          status?: "has_vehicle" | "needs_vehicle"
+          location?: string | null
+          date?: string
+          time?: string
+          user_id?: string
+          buddy_status?: "active" | "inactive" | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "travel_buddies_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       incidents: {
         Row: {
           created_at: string
