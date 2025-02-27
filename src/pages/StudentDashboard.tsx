@@ -103,7 +103,7 @@ const StudentDashboard = () => {
       title: "Automated Attendance",
       description: "Mark your presence seamlessly.",
       icon: CalendarCheck,
-      route: "/face-recognition",  // 🔥 This should point to your face recognition page
+      route: "/cam",  // 🔥 This should point to your face recognition page
       color: "bg-green-500",
     },
     {
@@ -111,6 +111,13 @@ const StudentDashboard = () => {
       description: "Prevent waste. Share excess food.",
       icon: Utensils,
       route: "/food",
+      color: "bg-orange-500",
+    },
+    {
+      title: "lights off",
+      description: "safe electricity",
+      icon: Shield,
+      route: "/cam",
       color: "bg-orange-500",
     },
     {

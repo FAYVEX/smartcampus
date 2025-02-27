@@ -210,6 +210,32 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          message: string;
+          type: string;
+          created_at: string;
+          read: boolean;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          message: string;
+          type: string;
+          created_at?: string;
+          read?: boolean;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          message?: string;
+          type?: string;
+          created_at?: string;
+          read?: boolean;
+        };
+      };
       profiles: {
         Row: {
           created_at: string

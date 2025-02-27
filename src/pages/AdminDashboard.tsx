@@ -56,10 +56,10 @@ const AdminDashboard = () => {
 
   const features = [
     {
-      title: "Dashboard Overview",
-      description: "Monitor system metrics and analytics.",
+      title: "Important notification",
+      description: "Quick notification",
       icon: LayoutDashboard,
-      route: "/dashboard-overview",
+      route: "/imp",
       color: "bg-purple-500",
     },
     {

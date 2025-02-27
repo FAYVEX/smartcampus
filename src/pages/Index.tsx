@@ -27,8 +27,11 @@ const Index = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-50 to-gray-100">
-      <LoginForm />
+    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-[#0c1335] via-[#dfdfdf] to-[#093d5f]">
+      {/* Glassmorphic Effect */}
+      <div className="relative z-10 p-8 bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl shadow-2xl">
+        <LoginForm />
+      </div>
     </div>
   );
 };
