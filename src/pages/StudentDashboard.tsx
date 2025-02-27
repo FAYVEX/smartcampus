@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
@@ -24,7 +23,7 @@ const StudentDashboard = () => {
   const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('darkMode') === 'true'
+      return localStorage.getItem('darkMode') === 'true';
     }
     return false;
   });
@@ -94,10 +93,17 @@ const StudentDashboard = () => {
       color: "bg-red-500",
     },
     {
+      title: "Travel Buddy",
+      description: "Find travel companions for safe journeys.",
+      icon: Search,
+      route: "/travel-buddy",
+      color: "bg-purple-500",
+    },
+    {
       title: "Automated Attendance",
       description: "Mark your presence seamlessly.",
       icon: CalendarCheck,
-      route: "/attendance",
+      route: "/face-recognition",  // 🔥 This should point to your face recognition page
       color: "bg-green-500",
     },
     {
@@ -125,11 +131,11 @@ const StudentDashboard = () => {
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <User className="w-6 h-6 text-primary" />
+              <User  className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-3xl font-semibold animate-fade-in">
-                {greeting}, {profile?.full_name || 'User'}!
+              <h1 className=" text-3xl font-semibold animate-fade-in">
+                {greeting}, {profile?.full_name || 'User '}!
               </h1>
               <p className="text-gray-500 dark:text-gray-400">
                 Welcome to your Smart Campus Dashboard
